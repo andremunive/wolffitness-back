@@ -38,6 +38,9 @@
     },
     "trainer": {
       "type": "string"
+    },
+    "hasPaid": {
+      "type": "boolean"
     }
   }
 }
