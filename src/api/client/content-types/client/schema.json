@@ -41,6 +41,9 @@
     },
     "hasPaid": {
       "type": "boolean"
+    },
+    "reasonForChanges": {
+      "type": "text"
     }
   }
 }

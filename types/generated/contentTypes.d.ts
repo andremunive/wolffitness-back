@@ -384,6 +384,7 @@ export interface ApiClientClient extends Schema.CollectionType {
     monthlyPayment: Attribute.Integer;
     trainer: Attribute.String;
     hasPaid: Attribute.Boolean;
+    reasonForChanges: Attribute.Text;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
