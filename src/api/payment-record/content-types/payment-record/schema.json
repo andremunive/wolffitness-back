@@ -1,0 +1,45 @@
+{
+  "kind": "collectionType",
+  "collectionName": "payment_records",
+  "info": {
+    "singularName": "payment-record",
+    "pluralName": "payment-records",
+    "displayName": "paymentRecord",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "client": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::client.client"
+    },
+    "paymentDate": {
+      "type": "date"
+    },
+    "dueDate": {
+      "type": "date"
+    },
+    "amount": {
+      "type": "biginteger"
+    },
+    "hasDiscounted": {
+      "type": "boolean"
+    },
+    "discountAmount": {
+      "type": "biginteger"
+    },
+    "discountReason": {
+      "type": "text"
+    },
+    "plan": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string"
+    }
+  }
+}

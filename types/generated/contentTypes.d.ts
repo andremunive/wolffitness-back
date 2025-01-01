@@ -376,15 +376,19 @@ export interface ApiClientClient extends Schema.CollectionType {
   attributes: {
     name: Attribute.String;
     whatsapp: Attribute.String;
-    startDate: Attribute.Date;
     endDate: Attribute.Date;
     plan: Attribute.String;
     discount: Attribute.Boolean;
-    discountDescription: Attribute.Text;
     monthlyPayment: Attribute.Integer;
     trainer: Attribute.String;
     hasPaid: Attribute.Boolean;
-    reasonForChanges: Attribute.Text;
+    birthDate: Attribute.Date;
+    gender: Attribute.String;
+    visible: Attribute.Boolean;
+    status: Attribute.String;
+    discountAmount: Attribute.BigInteger;
+    discountReason: Attribute.String;
+    email: Attribute.String;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -403,35 +407,90 @@ export interface ApiClientClient extends Schema.CollectionType {
   };
 }
 
-export interface ApiMonthlyClientMonthlyClient extends Schema.CollectionType {
-  collectionName: 'monthly_clients';
+export interface ApiMeasurementMeasurement extends Schema.CollectionType {
+  collectionName: 'measurements';
   info: {
-    singularName: 'monthly-client';
-    pluralName: 'monthly-clients';
-    displayName: 'monthlyClient';
+    singularName: 'measurement';
+    pluralName: 'measurements';
+    displayName: 'measurement';
     description: '';
   };
   options: {
     draftAndPublish: true;
   };
   attributes: {
-    endDate: Attribute.Date;
-    monthlyPayment: Attribute.Integer;
-    discount: Attribute.Boolean;
-    discountDescription: Attribute.Text;
-    name: Attribute.String;
-    trainer: Attribute.String;
+    client: Attribute.Relation<
+      'api::measurement.measurement',
+      'oneToOne',
+      'api::client.client'
+    >;
+    date: Attribute.Date;
+    weight: Attribute.Decimal;
+    height: Attribute.Decimal;
+    chest: Attribute.Decimal;
+    leftArm: Attribute.Decimal;
+    rightArm: Attribute.Decimal;
+    abdomen: Attribute.Decimal;
+    glutes: Attribute.Decimal;
+    leftThigh: Attribute.Decimal;
+    rightThigh: Attribute.Decimal;
+    leftCalf: Attribute.Decimal;
+    rightCalf: Attribute.Decimal;
+    bodyFatPercentage: Attribute.String;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
-      'api::monthly-client.monthly-client',
+      'api::measurement.measurement',
       'oneToOne',
       'admin::user'
     > &
       Attribute.Private;
     updatedBy: Attribute.Relation<
-      'api::monthly-client.monthly-client',
+      'api::measurement.measurement',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
+export interface ApiPaymentRecordPaymentRecord extends Schema.CollectionType {
+  collectionName: 'payment_records';
+  info: {
+    singularName: 'payment-record';
+    pluralName: 'payment-records';
+    displayName: 'paymentRecord';
+    description: '';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    client: Attribute.Relation<
+      'api::payment-record.payment-record',
+      'oneToOne',
+      'api::client.client'
+    >;
+    paymentDate: Attribute.Date;
+    dueDate: Attribute.Date;
+    amount: Attribute.BigInteger;
+    hasDiscounted: Attribute.Boolean;
+    discountAmount: Attribute.BigInteger;
+    discountReason: Attribute.Text;
+    plan: Attribute.String;
+    status: Attribute.String;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::payment-record.payment-record',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::payment-record.payment-record',
       'oneToOne',
       'admin::user'
     > &
@@ -905,7 +964,8 @@ declare module '@strapi/types' {
       'admin::transfer-token': AdminTransferToken;
       'admin::transfer-token-permission': AdminTransferTokenPermission;
       'api::client.client': ApiClientClient;
-      'api::monthly-client.monthly-client': ApiMonthlyClientMonthlyClient;
+      'api::measurement.measurement': ApiMeasurementMeasurement;
+      'api::payment-record.payment-record': ApiPaymentRecordPaymentRecord;
       'api::trainer.trainer': ApiTrainerTrainer;
       'plugin::upload.file': PluginUploadFile;
       'plugin::upload.folder': PluginUploadFolder;

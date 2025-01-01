@@ -1,0 +1,60 @@
+{
+  "kind": "collectionType",
+  "collectionName": "measurements",
+  "info": {
+    "singularName": "measurement",
+    "pluralName": "measurements",
+    "displayName": "measurement",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "client": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::client.client"
+    },
+    "date": {
+      "type": "date"
+    },
+    "weight": {
+      "type": "decimal"
+    },
+    "height": {
+      "type": "decimal"
+    },
+    "chest": {
+      "type": "decimal"
+    },
+    "leftArm": {
+      "type": "decimal"
+    },
+    "rightArm": {
+      "type": "decimal"
+    },
+    "abdomen": {
+      "type": "decimal"
+    },
+    "glutes": {
+      "type": "decimal"
+    },
+    "leftThigh": {
+      "type": "decimal"
+    },
+    "rightThigh": {
+      "type": "decimal"
+    },
+    "leftCalf": {
+      "type": "decimal"
+    },
+    "rightCalf": {
+      "type": "decimal"
+    },
+    "bodyFatPercentage": {
+      "type": "string"
+    }
+  }
+}

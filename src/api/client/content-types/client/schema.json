@@ -18,9 +18,6 @@
     "whatsapp": {
       "type": "string"
     },
-    "startDate": {
-      "type": "date"
-    },
     "endDate": {
       "type": "date"
     },
@@ -29,9 +26,6 @@
     },
     "discount": {
       "type": "boolean"
-    },
-    "discountDescription": {
-      "type": "text"
     },
     "monthlyPayment": {
       "type": "integer"
@@ -42,8 +36,26 @@
     "hasPaid": {
       "type": "boolean"
     },
-    "reasonForChanges": {
-      "type": "text"
+    "birthDate": {
+      "type": "date"
+    },
+    "gender": {
+      "type": "string"
+    },
+    "visible": {
+      "type": "boolean"
+    },
+    "status": {
+      "type": "string"
+    },
+    "discountAmount": {
+      "type": "biginteger"
+    },
+    "discountReason": {
+      "type": "string"
+    },
+    "email": {
+      "type": "string"
     }
   }
 }

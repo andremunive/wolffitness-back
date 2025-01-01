@@ -1,9 +1,18 @@
-'use strict';
+"use strict";
 
-/**
- * client router
- */
+// @ts-ignore
+const { createCoreRouter } = require("@strapi/strapi").factories;
 
-const { createCoreRouter } = require('@strapi/strapi').factories;
-
-module.exports = createCoreRouter('api::client.client');
+module.exports = createCoreRouter("api::client.client", {
+  routes: [
+    {
+      method: "GET",
+      path: "/trainer",
+      handler: "client.findByTrainer",
+      config: {
+        policies: [],
+        middlewares: [],
+      },
+    },
+  ],
+});
