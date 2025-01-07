@@ -12,6 +12,16 @@ module.exports = {
     },
     {
       method: "GET",
+      path: "/payment-records/summary-count/:trainer/:months",
+      handler: "payment-record.getClientCountsByTrainer",
+    },
+    {
+      method: "GET",
+      path: "/payment-records/summary-accounts/:trainer/:months",
+      handler: "payment-record.getClientAccountsByTrainer",
+    },
+    {
+      method: "GET",
       path: "/payment-records/summary/:trainer/:months",
       handler: "payment-record.getPaymentSummaryByTrainer",
     },

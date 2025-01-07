@@ -362,6 +362,175 @@ export interface AdminTransferTokenPermission extends Schema.CollectionType {
   };
 }
 
+export interface ApiClientClient extends Schema.CollectionType {
+  collectionName: 'clients';
+  info: {
+    singularName: 'client';
+    pluralName: 'clients';
+    displayName: 'client';
+    description: '';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    name: Attribute.String;
+    whatsapp: Attribute.String;
+    endDate: Attribute.Date;
+    plan: Attribute.String;
+    discount: Attribute.Boolean;
+    monthlyPayment: Attribute.Integer;
+    trainer: Attribute.String;
+    hasPaid: Attribute.Boolean;
+    birthDate: Attribute.Date;
+    gender: Attribute.String;
+    visible: Attribute.Boolean;
+    status: Attribute.String;
+    discountAmount: Attribute.BigInteger;
+    discountReason: Attribute.String;
+    email: Attribute.String;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::client.client',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::client.client',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
+export interface ApiMeasurementMeasurement extends Schema.CollectionType {
+  collectionName: 'measurements';
+  info: {
+    singularName: 'measurement';
+    pluralName: 'measurements';
+    displayName: 'measurement';
+    description: '';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    client: Attribute.Relation<
+      'api::measurement.measurement',
+      'oneToOne',
+      'api::client.client'
+    >;
+    date: Attribute.Date;
+    weight: Attribute.Decimal;
+    height: Attribute.Decimal;
+    chest: Attribute.Decimal;
+    leftArm: Attribute.Decimal;
+    rightArm: Attribute.Decimal;
+    abdomen: Attribute.Decimal;
+    glutes: Attribute.Decimal;
+    leftThigh: Attribute.Decimal;
+    rightThigh: Attribute.Decimal;
+    leftCalf: Attribute.Decimal;
+    rightCalf: Attribute.Decimal;
+    bodyFatPercentage: Attribute.String;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::measurement.measurement',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::measurement.measurement',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
+export interface ApiPaymentRecordPaymentRecord extends Schema.CollectionType {
+  collectionName: 'payment_records';
+  info: {
+    singularName: 'payment-record';
+    pluralName: 'payment-records';
+    displayName: 'paymentRecord';
+    description: '';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    client: Attribute.Relation<
+      'api::payment-record.payment-record',
+      'oneToOne',
+      'api::client.client'
+    >;
+    paymentDate: Attribute.Date;
+    dueDate: Attribute.Date;
+    amount: Attribute.BigInteger;
+    hasDiscounted: Attribute.Boolean;
+    discountAmount: Attribute.BigInteger;
+    discountReason: Attribute.Text;
+    plan: Attribute.String;
+    status: Attribute.String;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::payment-record.payment-record',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::payment-record.payment-record',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
+export interface ApiTrainerTrainer extends Schema.CollectionType {
+  collectionName: 'trainers';
+  info: {
+    singularName: 'trainer';
+    pluralName: 'trainers';
+    displayName: 'trainer';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    name: Attribute.String;
+    email: Attribute.String;
+    whatsapp: Attribute.String;
+    birthDate: Attribute.Date;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::trainer.trainer',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::trainer.trainer',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
 export interface PluginUploadFile extends Schema.CollectionType {
   collectionName: 'files';
   info: {
@@ -784,175 +953,6 @@ export interface PluginI18NLocale extends Schema.CollectionType {
   };
 }
 
-export interface ApiClientClient extends Schema.CollectionType {
-  collectionName: 'clients';
-  info: {
-    singularName: 'client';
-    pluralName: 'clients';
-    displayName: 'client';
-    description: '';
-  };
-  options: {
-    draftAndPublish: true;
-  };
-  attributes: {
-    name: Attribute.String;
-    whatsapp: Attribute.String;
-    endDate: Attribute.Date;
-    plan: Attribute.String;
-    discount: Attribute.Boolean;
-    monthlyPayment: Attribute.Integer;
-    trainer: Attribute.String;
-    hasPaid: Attribute.Boolean;
-    birthDate: Attribute.Date;
-    gender: Attribute.String;
-    visible: Attribute.Boolean;
-    status: Attribute.String;
-    discountAmount: Attribute.BigInteger;
-    discountReason: Attribute.String;
-    email: Attribute.String;
-    createdAt: Attribute.DateTime;
-    updatedAt: Attribute.DateTime;
-    publishedAt: Attribute.DateTime;
-    createdBy: Attribute.Relation<
-      'api::client.client',
-      'oneToOne',
-      'admin::user'
-    > &
-      Attribute.Private;
-    updatedBy: Attribute.Relation<
-      'api::client.client',
-      'oneToOne',
-      'admin::user'
-    > &
-      Attribute.Private;
-  };
-}
-
-export interface ApiMeasurementMeasurement extends Schema.CollectionType {
-  collectionName: 'measurements';
-  info: {
-    singularName: 'measurement';
-    pluralName: 'measurements';
-    displayName: 'measurement';
-    description: '';
-  };
-  options: {
-    draftAndPublish: true;
-  };
-  attributes: {
-    client: Attribute.Relation<
-      'api::measurement.measurement',
-      'oneToOne',
-      'api::client.client'
-    >;
-    date: Attribute.Date;
-    weight: Attribute.Decimal;
-    height: Attribute.Decimal;
-    chest: Attribute.Decimal;
-    leftArm: Attribute.Decimal;
-    rightArm: Attribute.Decimal;
-    abdomen: Attribute.Decimal;
-    glutes: Attribute.Decimal;
-    leftThigh: Attribute.Decimal;
-    rightThigh: Attribute.Decimal;
-    leftCalf: Attribute.Decimal;
-    rightCalf: Attribute.Decimal;
-    bodyFatPercentage: Attribute.String;
-    createdAt: Attribute.DateTime;
-    updatedAt: Attribute.DateTime;
-    publishedAt: Attribute.DateTime;
-    createdBy: Attribute.Relation<
-      'api::measurement.measurement',
-      'oneToOne',
-      'admin::user'
-    > &
-      Attribute.Private;
-    updatedBy: Attribute.Relation<
-      'api::measurement.measurement',
-      'oneToOne',
-      'admin::user'
-    > &
-      Attribute.Private;
-  };
-}
-
-export interface ApiPaymentRecordPaymentRecord extends Schema.CollectionType {
-  collectionName: 'payment_records';
-  info: {
-    singularName: 'payment-record';
-    pluralName: 'payment-records';
-    displayName: 'paymentRecord';
-    description: '';
-  };
-  options: {
-    draftAndPublish: true;
-  };
-  attributes: {
-    client: Attribute.Relation<
-      'api::payment-record.payment-record',
-      'oneToOne',
-      'api::client.client'
-    >;
-    paymentDate: Attribute.Date;
-    dueDate: Attribute.Date;
-    amount: Attribute.BigInteger;
-    hasDiscounted: Attribute.Boolean;
-    discountAmount: Attribute.BigInteger;
-    discountReason: Attribute.Text;
-    plan: Attribute.String;
-    status: Attribute.String;
-    createdAt: Attribute.DateTime;
-    updatedAt: Attribute.DateTime;
-    publishedAt: Attribute.DateTime;
-    createdBy: Attribute.Relation<
-      'api::payment-record.payment-record',
-      'oneToOne',
-      'admin::user'
-    > &
-      Attribute.Private;
-    updatedBy: Attribute.Relation<
-      'api::payment-record.payment-record',
-      'oneToOne',
-      'admin::user'
-    > &
-      Attribute.Private;
-  };
-}
-
-export interface ApiTrainerTrainer extends Schema.CollectionType {
-  collectionName: 'trainers';
-  info: {
-    singularName: 'trainer';
-    pluralName: 'trainers';
-    displayName: 'trainer';
-  };
-  options: {
-    draftAndPublish: true;
-  };
-  attributes: {
-    name: Attribute.String;
-    email: Attribute.String;
-    whatsapp: Attribute.String;
-    birthDate: Attribute.Date;
-    createdAt: Attribute.DateTime;
-    updatedAt: Attribute.DateTime;
-    publishedAt: Attribute.DateTime;
-    createdBy: Attribute.Relation<
-      'api::trainer.trainer',
-      'oneToOne',
-      'admin::user'
-    > &
-      Attribute.Private;
-    updatedBy: Attribute.Relation<
-      'api::trainer.trainer',
-      'oneToOne',
-      'admin::user'
-    > &
-      Attribute.Private;
-  };
-}
-
 declare module '@strapi/types' {
   export module Shared {
     export interface ContentTypes {
@@ -963,6 +963,10 @@ declare module '@strapi/types' {
       'admin::api-token-permission': AdminApiTokenPermission;
       'admin::transfer-token': AdminTransferToken;
       'admin::transfer-token-permission': AdminTransferTokenPermission;
+      'api::client.client': ApiClientClient;
+      'api::measurement.measurement': ApiMeasurementMeasurement;
+      'api::payment-record.payment-record': ApiPaymentRecordPaymentRecord;
+      'api::trainer.trainer': ApiTrainerTrainer;
       'plugin::upload.file': PluginUploadFile;
       'plugin::upload.folder': PluginUploadFolder;
       'plugin::content-releases.release': PluginContentReleasesRelease;
@@ -971,10 +975,6 @@ declare module '@strapi/types' {
       'plugin::users-permissions.role': PluginUsersPermissionsRole;
       'plugin::users-permissions.user': PluginUsersPermissionsUser;
       'plugin::i18n.locale': PluginI18NLocale;
-      'api::client.client': ApiClientClient;
-      'api::measurement.measurement': ApiMeasurementMeasurement;
-      'api::payment-record.payment-record': ApiPaymentRecordPaymentRecord;
-      'api::trainer.trainer': ApiTrainerTrainer;
     }
   }
 }
