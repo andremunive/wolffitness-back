@@ -115,6 +115,38 @@ module.exports = createCoreController(
         // Procesar los datos
         const paymentSummary = {};
 
+        const calculateBonus = (payments, accumulatedCount) => {
+          let bonus = 0;
+          let eligibleCount = accumulatedCount; // Clientes válidos acumulados hasta ahora
+
+          payments.forEach((payment) => {
+            if (payment.plan === "6 dias" && payment.status === "paid") {
+              eligibleCount += 1; // Incrementa el conteo de clientes válidos
+
+              if (eligibleCount > 7) {
+                // Solo aplica el bono a partir del octavo cliente
+                const amount = parseFloat(payment.amount);
+                const discount = payment.hasDiscounted
+                  ? parseFloat(payment.discountAmount || 0)
+                  : 0;
+
+                if (!payment.hasDiscounted) {
+                  // Sin descuento
+                  bonus += amount / 2 - 40000;
+                } else if (payment.discountReason === "Promocion") {
+                  // Descuento tipo "Promocion"
+                  bonus += (amount - discount) / 2 - 40000;
+                } else if (payment.discountReason === "Personal") {
+                  // Descuento tipo "Personal"
+                  bonus += amount / 2 - 40000;
+                }
+              }
+            }
+          });
+
+          return { bonus, eligibleCount };
+        };
+
         for (let i = 0; i < months; i++) {
           const month = new Date();
           month.setMonth(now.getMonth() - i);
@@ -145,15 +177,29 @@ module.exports = createCoreController(
                 : 0;
               const reason = payment.discountReason;
 
-              if (payment.hasDiscounted) {
-                if (reason === "Promocion") {
-                  return sum + (amount - discount) / 2;
-                } else if (reason === "Personal") {
-                  return sum + amount / 2 - discount;
+              if (payment.plan === "6 dias") {
+                // Plan de 6 días (sigue como antes)
+                if (payment.hasDiscounted) {
+                  if (reason === "Promocion") {
+                    return sum + (amount - discount) / 2;
+                  } else if (reason === "Personal") {
+                    return sum + amount / 2 - discount;
+                  }
                 }
+                return sum + amount / 2;
+              } else if (payment.plan === "3 dias") {
+                // Plan de 3 días (nuevo cálculo)
+                if (payment.hasDiscounted) {
+                  if (reason === "Promocion") {
+                    return sum + 50000 - discount; // Solo afecta al monto del entrenador
+                  } else if (reason === "Personal") {
+                    return sum + 50000 - discount; // Igual al anterior
+                  }
+                }
+                return sum + 50000; // Solo considera la parte del entrenador
               }
 
-              return sum + amount;
+              return sum;
             }, 0);
           };
 
@@ -166,14 +212,11 @@ module.exports = createCoreController(
 
               if (payment.hasDiscounted) {
                 const reason = payment.discountReason;
-                if (reason === "Promocion") {
-                  return sum + (amount - discount) / 2;
-                } else if (reason === "Personal") {
-                  return sum + amount / 2 - discount;
+                if (reason === "Promocion" || reason === "Personal") {
+                  return sum + (amount - discount); // Resta el descuento sin dividir
                 }
               }
-
-              return sum + amount / 2;
+              return sum + amount; // Suma completa del monto
             }, 0);
           };
 
@@ -202,18 +245,32 @@ module.exports = createCoreController(
             );
           };
 
+          // Calcular el bono para la primera quincena
+          const firstHalfBonusData = calculateBonus(firstHalfPayments, 0);
+          const firstHalfBonus = firstHalfBonusData.bonus;
+          const accumulatedCountFirstHalf = firstHalfBonusData.eligibleCount;
+
+          // Calcular el bono para la segunda quincena, acumulando los clientes de la primera
+          const secondHalfBonusData = calculateBonus(
+            secondHalfPayments,
+            accumulatedCountFirstHalf
+          );
+          const secondHalfBonus = secondHalfBonusData.bonus;
+
           paymentSummary[`${year}-${monthNumber}`] = {
             firstHalf: {
               totalClients: firstHalfPayments.length,
               totalCollected: calculateCollected(firstHalfPayments), // Total recolectado (sin dividir en dos)
               totalGenerated: calculateGenerated(firstHalfPayments), // Total generado con reglas específicas
               planCounts: calculatePlanCounts(firstHalfPayments), // Totales por plan
+              bonus: firstHalfBonus, // Bono acumulado en la primera quincena
             },
             secondHalf: {
               totalClients: secondHalfPayments.length,
               totalCollected: calculateCollected(secondHalfPayments), // Total recolectado (sin dividir en dos)
               totalGenerated: calculateGenerated(secondHalfPayments), // Total generado con reglas específicas
               planCounts: calculatePlanCounts(secondHalfPayments), // Totales por plan
+              bonus: secondHalfBonus + firstHalfBonus, // Bono acumulado total (segunda + primera)
             },
           };
         }
