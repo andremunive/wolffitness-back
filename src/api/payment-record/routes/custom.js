@@ -17,13 +17,18 @@ module.exports = {
     },
     {
       method: "GET",
+      path: "/payment-records/all-summary-count/:months",
+      handler: "payment-record.getClientCountsForAllTrainers",
+    },
+    {
+      method: "GET",
       path: "/payment-records/summary-accounts/:trainer/:months",
       handler: "payment-record.getClientAccountsByTrainer",
     },
     {
       method: "GET",
-      path: "/payment-records/summary/:trainer/:months",
-      handler: "payment-record.getPaymentSummaryByTrainer",
+      path: "/payment-records/all-summary-accounts/:months",
+      handler: "payment-record.getClientAccountsForAllTrainers",
     },
     {
       method: "GET",
