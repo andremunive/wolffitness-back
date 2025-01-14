@@ -1017,7 +1017,7 @@ module.exports = createCoreController(
           // Quinta
           const calculateIncomeFromLastFortNight = (payments) => {
             return payments.reduce((sum, payment) => {
-              if (payment.currentPaymentStatus == "pending") return sum;
+              if (payment.currentPaymentStatus === "pending") return sum;
               const amount = parseFloat(payment.amount);
               if (payment.hasDiscounted) {
                 const discount = payment.hasDiscounted
@@ -1073,9 +1073,11 @@ module.exports = createCoreController(
             startSecondHalf.setUTCHours(0, 0, 0, 0);
             const endSecondHalf = new Date(year, monthNumber, 0);
             endSecondHalf.setUTCHours(0, 0, 0, 0);
-            month.setMonth(now.getMonth() - 1);
-            const previousMonthNumber = month.getMonth() + 1;
-            const yearForPreviousMonth = month.getFullYear();
+            // Calculo para la quincena anterior
+            const month2 = new Date();
+            month2.setMonth(now.getMonth() - i - 1);
+            const previousMonthNumber = month2.getMonth() + 1;
+            const yearForPreviousMonth = month2.getFullYear();
             const startPreviousFirstHalf = new Date(year, monthNumber - 1, 1);
             startPreviousFirstHalf.setUTCHours(0, 0, 0, 0);
             const endPreviousFirstHalf = new Date(year, monthNumber - 1, 15);
@@ -1092,7 +1094,6 @@ module.exports = createCoreController(
               0
             );
             endPreviousSecondHalf.setUTCHours(0, 0, 0, 0);
-            let isFirstHalf = false;
 
             previousFirstHalfPayments = paymentRecords.filter((payment) => {
               const paymentDate = new Date(payment.paymentDate);
