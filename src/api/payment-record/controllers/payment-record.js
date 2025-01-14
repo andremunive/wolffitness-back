@@ -918,9 +918,9 @@ module.exports = createCoreController(
           const trainerName = trainer.name;
           // Obtener fecha de inicio y fin de los últimos meses
           const now = new Date();
-          const threeMonthsAgo = new Date();
-          threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - (months - 1));
-          threeMonthsAgo.setDate(1); // Inicio del primer mes
+          const monthsAgo = new Date();
+          monthsAgo.setMonth(monthsAgo.getMonth() - months);
+          monthsAgo.setDate(1); // Inicio del primer mes
 
           const endOfMonth = new Date();
           endOfMonth.setMonth(endOfMonth.getMonth() + 1, 0); // Último día del mes actual
@@ -933,7 +933,7 @@ module.exports = createCoreController(
               filters: {
                 trainer: trainerId,
                 paymentDate: {
-                  $gte: threeMonthsAgo.toISOString(), // Desde el inicio de los meses
+                  $gte: monthsAgo.toISOString(), // Desde el inicio de los meses
                   $lte: endOfMonth.toISOString(), // Hasta el último día del mes actual
                 },
               },
@@ -1223,10 +1223,15 @@ module.exports = createCoreController(
                     endSecondHalf
                   ) +
                   calculateIncomeFromLastFortNight(previousFirstHalfPayments),
+                trainerIncome: calculateTrainerIncome(
+                  secondHalfPayments,
+                  previousFirstHalfPayments,
+                  startSecondHalf,
+                  endSecondHalf
+                ),
               },
             };
             clientSummary[trainerName] = accountSummary;
-            // return this.transformResponse(clientSummary);
           }
         }
         return this.transformResponse(clientSummary);
