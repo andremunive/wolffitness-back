@@ -944,7 +944,9 @@ module.exports = createCoreController(
           // Primera
           const calculateFortNightIncome = (payments, startDate, limitDate) => {
             return payments.reduce((sum, payment) => {
-              const receiptDate = new Date(payment.receiptDate);
+              const receiptDate = payment.receiptDate
+                ? new Date(payment.receiptDate)
+                : undefined;
               const paymentDate = new Date(payment.paymentDate);
               if (payment.currentPaymentStatus == "pending") return sum;
               if (receiptDate > limitDate) return sum;
@@ -967,7 +969,9 @@ module.exports = createCoreController(
             limitDate
           ) => {
             return payments.reduce((count, payment) => {
-              const receiptDate = new Date(payment.receiptDate);
+              const receiptDate = payment.receiptDate
+                ? new Date(payment.receiptDate)
+                : undefined;
               if (payment.currentPaymentStatus == "pending") return count;
               if (receiptDate > limitDate) return count;
 
@@ -980,8 +984,12 @@ module.exports = createCoreController(
           // Tercera
           const calculateXDayPlanTotalPending = (payments, plan, limitDate) => {
             return payments.reduce((count, payment) => {
-              const receiptDate = new Date(payment.receiptDate);
-              if (receiptDate <= limitDate) return count;
+              const receiptDate = payment.receiptDate
+                ? new Date(payment.receiptDate)
+                : undefined;
+              if (receiptDate <= limitDate) {
+                return count;
+              }
 
               if (payment.plan == `${plan} dias`) {
                 count += 1;
@@ -992,7 +1000,9 @@ module.exports = createCoreController(
           // Cuarta
           const calculatePendingIncome = (payments, limitDate) => {
             return payments.reduce((sum, payment) => {
-              const receiptDate = new Date(payment.receiptDate);
+              const receiptDate = payment.receiptDate
+                ? new Date(payment.receiptDate)
+                : undefined;
               if (receiptDate <= limitDate) return sum;
               const amount = parseFloat(payment.amount);
               if (payment.hasDiscounted) {
@@ -1017,6 +1027,34 @@ module.exports = createCoreController(
               }
               return sum + amount;
             }, 0);
+          };
+          // Sexta
+          const calculateTrainerIncome = (
+            currentFortNightPayment,
+            previousFortNightPayments,
+            startDate,
+            limitDate
+          ) => {
+            const currentFortNightTrainerIncome =
+              currentFortNightPayment.reduce((sum, payment) => {
+                const receiptDate = payment.receiptDate
+                  ? new Date(payment.receiptDate)
+                  : undefined;
+                const paymentDate = new Date(payment.paymentDate);
+                if (payment.currentPaymentStatus == "pending") return sum;
+                if (receiptDate > limitDate) return sum;
+                if (paymentDate < startDate) return sum;
+                const amount = parseFloat(payment.amount);
+                if (payment.hasDiscounted) {
+                  const discount = payment.hasDiscounted
+                    ? parseFloat(payment.discountAmount || 0)
+                    : 0;
+                  return sum + (amount - discount);
+                } else {
+                  sum + amount / 2;
+                }
+              }, 0);
+            return currentFortNightTrainerIncome;
           };
           for (let i = 0; i < months; i++) {
             let previousFirstHalfPayments = {};
@@ -1136,6 +1174,12 @@ module.exports = createCoreController(
                     endFirstHalf
                   ) +
                   calculateIncomeFromLastFortNight(previousSecondHalfPayments),
+                trainerIncome: calculateTrainerIncome(
+                  firstHalfPayments,
+                  previousSecondHalfPayments,
+                  startFirstHalf,
+                  endFirstHalf
+                ),
               },
               secondHalf: {
                 fortNight: "Segunda",
