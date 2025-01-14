@@ -1103,11 +1103,36 @@ module.exports = createCoreController(
               }, 0);
             return currentFortNightTrainerIncome + incomeFromPreviousFortNight;
           };
+          // Septima
+          const calculateBonus = (paymentsForBonus) => {
+            let bonus = 0;
+            let elegibleForBonus = 0;
+
+            paymentsForBonus.forEach((payment) => {
+              elegibleForBonus += 1;
+              if (elegibleForBonus > 7) {
+                const amount = parseFloat(payment.amount);
+                const discount = payment.hasDiscounted
+                  ? parseFloat(payment.discountAmount || 0)
+                  : 0;
+
+                if (!payment.hasDiscounted) {
+                  bonus += amount / 2 - 40000;
+                } else if (payment.discountReason === "Promocion") {
+                  bonus += (amount - discount) / 2 - 40000;
+                } else if (payment.discountReason === "Personal") {
+                  bonus += amount / 2 - 40000;
+                }
+              }
+            });
+            return bonus;
+          };
           for (let i = 0; i < months; i++) {
             let previousFirstHalfPayments = {};
             let previousSecondHalfPayments = {};
             let firstHalfPayments = {};
             let secondHalfPayments = {};
+            let clientsForBonus = {};
             const month = new Date();
             month.setMonth(now.getMonth() - i);
             const year = month.getFullYear();
@@ -1180,6 +1205,16 @@ module.exports = createCoreController(
                 (receiptDate >= startSecondHalf && receiptDate <= endSecondHalf)
               );
             });
+            clientsForBonus = paymentRecords.filter((payment) => {
+              const receiptDate = new Date(payment.receiptDate);
+              const plan = payment.plan;
+              return (
+                receiptDate >= startFirstHalf &&
+                receiptDate <= endSecondHalf &&
+                plan === "6 dias"
+              );
+            });
+            console.log("clientsForBonus", clientsForBonus);
             accountSummary[`${year}-${monthNumber}`] = {
               firstHalf: {
                 fortNight: "Primera",
@@ -1228,6 +1263,7 @@ module.exports = createCoreController(
                   startFirstHalf,
                   endFirstHalf
                 ),
+                monthBonus: calculateBonus(clientsForBonus),
               },
               secondHalf: {
                 fortNight: "Segunda",
@@ -1276,6 +1312,7 @@ module.exports = createCoreController(
                   startSecondHalf,
                   endSecondHalf
                 ),
+                monthBonus: calculateBonus(clientsForBonus),
               },
             };
             clientSummary[trainerName] = accountSummary;
