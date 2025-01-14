@@ -1045,16 +1045,63 @@ module.exports = createCoreController(
                 if (receiptDate > limitDate) return sum;
                 if (paymentDate < startDate) return sum;
                 const amount = parseFloat(payment.amount);
-                if (payment.hasDiscounted) {
-                  const discount = payment.hasDiscounted
-                    ? parseFloat(payment.discountAmount || 0)
-                    : 0;
-                  return sum + (amount - discount);
+                if (payment.plan === "6 dias") {
+                  if (payment.hasDiscounted) {
+                    if (payment.discountReason === "Promocion") {
+                      const discount = payment.discountAmount / 2;
+                      return sum + (amount / 2 - discount);
+                    } else {
+                      const discount = payment.discountAmount;
+                      return sum + (amount / 2 - discount);
+                    }
+                  } else {
+                    return sum + amount / 2;
+                  }
                 } else {
-                  sum + amount / 2;
+                  if (payment.hasDiscounted) {
+                    if (payment.discountReason === "Promocion") {
+                      const discount = payment.discountAmount / 2;
+                      return sum + (amount - 30000 - discount);
+                    } else {
+                      const discount = payment.discountAmount;
+                      return sum + (amount - 30000 - discount);
+                    }
+                  } else {
+                    return sum + amount - 30000;
+                  }
                 }
               }, 0);
-            return currentFortNightTrainerIncome;
+            const incomeFromPreviousFortNight =
+              previousFortNightPayments.reduce((sum, payment) => {
+                if (payment.currentPaymentStatus === "pending") return sum;
+                const amount = parseFloat(payment.amount);
+                if (payment.plan === "6 dias") {
+                  if (payment.hasDiscounted) {
+                    if (payment.discountReason === "Promocion") {
+                      const discount = payment.discountAmount / 2;
+                      return sum + (amount / 2 - discount);
+                    } else {
+                      const discount = payment.discountAmount;
+                      return sum + (amount / 2 - discount);
+                    }
+                  } else {
+                    return sum + amount / 2;
+                  }
+                } else {
+                  if (payment.hasDiscounted) {
+                    if (payment.discountReason === "Promocion") {
+                      const discount = payment.discountAmount / 2;
+                      return sum + (amount - 30000 - discount);
+                    } else {
+                      const discount = payment.discountAmount;
+                      return sum + (amount - 30000 - discount);
+                    }
+                  } else {
+                    return sum + amount - 30000;
+                  }
+                }
+              }, 0);
+            return currentFortNightTrainerIncome + incomeFromPreviousFortNight;
           };
           for (let i = 0; i < months; i++) {
             let previousFirstHalfPayments = {};
