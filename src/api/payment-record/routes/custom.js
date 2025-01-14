@@ -33,7 +33,7 @@ module.exports = {
     {
       method: "GET",
       path: "/payment-records/all-summary/:months",
-      handler: "payment-record.getPaymentSummaryForAllTrainers",
+      handler: "payment-record.getClientsSummaryForAllTrainers",
     },
   ],
 };

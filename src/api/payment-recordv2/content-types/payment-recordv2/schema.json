@@ -1,11 +1,10 @@
 {
   "kind": "collectionType",
-  "collectionName": "payment_records",
+  "collectionName": "payment_recordsv2",
   "info": {
-    "singularName": "payment-record",
-    "pluralName": "payment-records",
-    "displayName": "paymentRecord",
-    "description": ""
+    "singularName": "payment-recordv2",
+    "pluralName": "payment-recordsv2",
+    "displayName": "paymentRecordv2"
   },
   "options": {
     "draftAndPublish": true
@@ -16,6 +15,11 @@
       "type": "relation",
       "relation": "oneToOne",
       "target": "api::client.client"
+    },
+    "trainer": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::trainer.trainer"
     },
     "paymentDate": {
       "type": "date"
@@ -33,24 +37,16 @@
       "type": "biginteger"
     },
     "discountReason": {
-      "type": "text"
+      "type": "string"
     },
     "plan": {
-      "type": "string"
-    },
-    "status": {
-      "type": "string"
-    },
-    "currentPaymentStatus": {
       "type": "string"
     },
     "previousPaymentStatus": {
       "type": "string"
     },
-    "trainer": {
-      "type": "relation",
-      "relation": "oneToOne",
-      "target": "api::trainer.trainer"
+    "currentPaymentStatus": {
+      "type": "string"
     },
     "fortNight": {
       "type": "string"

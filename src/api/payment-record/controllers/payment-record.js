@@ -774,41 +774,6 @@ module.exports = createCoreController(
             }, 0);
           };
 
-          const calculatePendingCollected = (payments) => {
-            return payments.reduce((sum, payment) => {
-              if (payment.status === "pending") {
-                const amount = parseFloat(payment.amount);
-                const discount = payment.hasDiscounted
-                  ? parseFloat(payment.discountAmount || 0)
-                  : 0;
-                const reason = payment.discountReason;
-
-                if (payment.plan === "6 dias") {
-                  if (payment.hasDiscounted) {
-                    if (reason === "Promocion") {
-                      return sum + (amount - discount) / 2;
-                    } else if (reason === "Personal") {
-                      return sum + amount / 2 - discount;
-                    }
-                  }
-                  return sum + amount / 2;
-                } else if (payment.plan === "3 dias") {
-                  if (payment.hasDiscounted) {
-                    if (reason === "Promocion") {
-                      return sum + 50000 - discount;
-                    } else if (reason === "Personal") {
-                      return sum + 50000 - discount;
-                    }
-                  }
-                  return sum + 50000;
-                }
-
-                return sum;
-              }
-              return sum;
-            }, 0);
-          };
-
           const accountSummary = {};
 
           for (let i = 0; i < months; i++) {
@@ -820,6 +785,69 @@ module.exports = createCoreController(
             const endFirstHalf = new Date(year, monthNumber - 1, 15);
             const startSecondHalf = new Date(year, monthNumber - 1, 16);
             const endSecondHalf = new Date(year, monthNumber, 0);
+
+            if (i == 0) {
+              const currentMonth = new Date();
+              let isFirstHalf = false;
+              if (
+                currentMonth >= startFirstHalf &&
+                currentMonth <= endFirstHalf
+              ) {
+                isFirstHalf = true;
+              }
+              let firstHalfPayments;
+              let secondHalfPayments;
+              if (isFirstHalf) {
+                firstHalfPayments = paymentRecords.filter((payment) => {
+                  const paymentDate = new Date(payment.updatedAt);
+                  return (
+                    paymentDate >= startFirstHalf && paymentDate <= endFirstHalf
+                  );
+                });
+                secondHalfPayments = paymentRecords.filter((payment) => {
+                  const paymentDate = new Date(payment.paymentDate);
+                  return (
+                    paymentDate >= startSecondHalf &&
+                    paymentDate <= endSecondHalf
+                  );
+                });
+              } else {
+                firstHalfPayments = paymentRecords.filter((payment) => {
+                  const paymentDate = new Date(payment.createdAt);
+                  return (
+                    paymentDate >= startFirstHalf && paymentDate <= endFirstHalf
+                  );
+                });
+                secondHalfPayments = paymentRecords.filter((payment) => {
+                  const paymentDate = new Date(payment.updatedAt);
+                  return (
+                    paymentDate >= startSecondHalf &&
+                    paymentDate <= endSecondHalf
+                  );
+                });
+              }
+
+              accountSummary[`${year}-${monthNumber}`] = {
+                firstHalf: {
+                  totalCollected: calculateCollected(firstHalfPayments),
+                  totalGenerated: calculateGenerated(firstHalfPayments),
+                  bonus: calculateBonus(firstHalfPayments, 0).bonus,
+                  pendingGenerated:
+                    calculatePendingGenerated(firstHalfPayments),
+                },
+                secondHalf: {
+                  totalCollected: calculateCollected(secondHalfPayments),
+                  totalGenerated: calculateGenerated(secondHalfPayments),
+                  bonus: calculateBonus(
+                    secondHalfPayments,
+                    calculateBonus(firstHalfPayments, 0).eligibleCount
+                  ).bonus,
+                  pendingGenerated:
+                    calculatePendingGenerated(secondHalfPayments),
+                },
+              };
+              console.log("SUMMARY: ", accountSummary);
+            }
 
             const firstHalfPayments = paymentRecords.filter((payment) => {
               const paymentDate = new Date(payment.paymentDate);
@@ -841,7 +869,6 @@ module.exports = createCoreController(
                 totalGenerated: calculateGenerated(firstHalfPayments),
                 bonus: calculateBonus(firstHalfPayments, 0).bonus,
                 pendingGenerated: calculatePendingGenerated(firstHalfPayments),
-                pendingCollected: calculatePendingCollected(firstHalfPayments),
               },
               secondHalf: {
                 totalCollected: calculateCollected(secondHalfPayments),
@@ -851,7 +878,6 @@ module.exports = createCoreController(
                   calculateBonus(firstHalfPayments, 0).eligibleCount
                 ).bonus,
                 pendingGenerated: calculatePendingGenerated(secondHalfPayments),
-                pendingCollected: calculatePendingCollected(secondHalfPayments),
               },
             };
           }
@@ -861,6 +887,304 @@ module.exports = createCoreController(
 
         // Retornar el resumen de todas las cuentas
         return this.transformResponse(accountSummaries);
+      } catch (error) {
+        strapi.log.error(error);
+        return ctx.internalServerError(
+          "Ocurrió un error al procesar la solicitud"
+        );
+      }
+    },
+
+    async getClientsSummaryForAllTrainers(ctx) {
+      try {
+        const { months } = ctx.params;
+
+        // Obtener todos los entrenadores
+        const trainers = await strapi.entityService.findMany(
+          "api::trainer.trainer",
+          {
+            fields: ["id", "name"], // Solo necesitamos los id's de los entrenadores
+          }
+        );
+
+        if (!trainers.length) {
+          return ctx.notFound(
+            "No se encontraron entrenadores en la base de datos"
+          );
+        }
+        const clientSummary = {};
+        for (const trainer of trainers) {
+          const trainerId = trainer.id;
+          const trainerName = trainer.name;
+          // Obtener fecha de inicio y fin de los últimos meses
+          const now = new Date();
+          const threeMonthsAgo = new Date();
+          threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - (months - 1));
+          threeMonthsAgo.setDate(1); // Inicio del primer mes
+
+          const endOfMonth = new Date();
+          endOfMonth.setMonth(endOfMonth.getMonth() + 1, 0); // Último día del mes actual
+          endOfMonth.setHours(23, 59, 59, 999);
+
+          // Buscar registros de pagos en los últimos meses
+          const paymentRecords = await strapi.entityService.findMany(
+            "api::payment-record.payment-record",
+            {
+              filters: {
+                trainer: trainerId,
+                paymentDate: {
+                  $gte: threeMonthsAgo.toISOString(), // Desde el inicio de los meses
+                  $lte: endOfMonth.toISOString(), // Hasta el último día del mes actual
+                },
+              },
+            }
+          );
+          const accountSummary = {};
+          // Funciones para hacer los calculos
+          // Primera
+          const calculateFortNightIncome = (payments, startDate, limitDate) => {
+            return payments.reduce((sum, payment) => {
+              const receiptDate = new Date(payment.receiptDate);
+              const paymentDate = new Date(payment.paymentDate);
+              if (payment.currentPaymentStatus == "pending") return sum;
+              if (receiptDate > limitDate) return sum;
+              if (paymentDate < startDate) return sum;
+              const amount = parseFloat(payment.amount);
+              if (payment.hasDiscounted) {
+                const discount = payment.hasDiscounted
+                  ? parseFloat(payment.discountAmount || 0)
+                  : 0;
+                return sum + (amount - discount);
+              }
+
+              return sum + amount;
+            }, 0);
+          };
+          // Segunda
+          const calculateXDayPlanTotalPayments = (
+            payments,
+            plan,
+            limitDate
+          ) => {
+            return payments.reduce((count, payment) => {
+              const receiptDate = new Date(payment.receiptDate);
+              if (payment.currentPaymentStatus == "pending") return count;
+              if (receiptDate > limitDate) return count;
+
+              if (payment.plan == `${plan} dias`) {
+                count += 1;
+              }
+              return count;
+            }, 0);
+          };
+          // Tercera
+          const calculateXDayPlanTotalPending = (payments, plan, limitDate) => {
+            return payments.reduce((count, payment) => {
+              const receiptDate = new Date(payment.receiptDate);
+              if (receiptDate <= limitDate) return count;
+
+              if (payment.plan == `${plan} dias`) {
+                count += 1;
+              }
+              return count;
+            }, 0);
+          };
+          // Cuarta
+          const calculatePendingIncome = (payments, limitDate) => {
+            return payments.reduce((sum, payment) => {
+              const receiptDate = new Date(payment.receiptDate);
+              if (receiptDate <= limitDate) return sum;
+              const amount = parseFloat(payment.amount);
+              if (payment.hasDiscounted) {
+                const discount = payment.hasDiscounted
+                  ? parseFloat(payment.discountAmount || 0)
+                  : 0;
+                return sum + (amount - discount);
+              }
+              return sum + amount;
+            }, 0);
+          };
+          // Quinta
+          const calculateIncomeFromLastFortNight = (payments) => {
+            return payments.reduce((sum, payment) => {
+              if (payment.currentPaymentStatus == "pending") return sum;
+              const amount = parseFloat(payment.amount);
+              if (payment.hasDiscounted) {
+                const discount = payment.hasDiscounted
+                  ? parseFloat(payment.discountAmount || 0)
+                  : 0;
+                return sum + (amount - discount);
+              }
+              return sum + amount;
+            }, 0);
+          };
+          for (let i = 0; i < months; i++) {
+            let previousFirstHalfPayments = {};
+            let previousSecondHalfPayments = {};
+            let firstHalfPayments = {};
+            let secondHalfPayments = {};
+            const month = new Date();
+            month.setMonth(now.getMonth() - i);
+            const year = month.getFullYear();
+            const monthNumber = month.getMonth() + 1;
+            const startFirstHalf = new Date(year, monthNumber - 1, 1);
+            startFirstHalf.setUTCHours(0, 0, 0, 0);
+            const endFirstHalf = new Date(year, monthNumber - 1, 15);
+            endFirstHalf.setUTCHours(0, 0, 0, 0);
+            const startSecondHalf = new Date(year, monthNumber - 1, 16);
+            startSecondHalf.setUTCHours(0, 0, 0, 0);
+            const endSecondHalf = new Date(year, monthNumber, 0);
+            endSecondHalf.setUTCHours(0, 0, 0, 0);
+            month.setMonth(now.getMonth() - 1);
+            const previousMonthNumber = month.getMonth() + 1;
+            const yearForPreviousMonth = month.getFullYear();
+            const startPreviousFirstHalf = new Date(year, monthNumber - 1, 1);
+            startPreviousFirstHalf.setUTCHours(0, 0, 0, 0);
+            const endPreviousFirstHalf = new Date(year, monthNumber - 1, 15);
+            endPreviousFirstHalf.setUTCHours(0, 0, 0, 0);
+            const startPreviousSecondHalf = new Date(
+              yearForPreviousMonth,
+              previousMonthNumber - 1,
+              16
+            );
+            startPreviousSecondHalf.setUTCHours(0, 0, 0, 0);
+            const endPreviousSecondHalf = new Date(
+              yearForPreviousMonth,
+              previousMonthNumber,
+              0
+            );
+            endPreviousSecondHalf.setUTCHours(0, 0, 0, 0);
+            let isFirstHalf = false;
+
+            previousFirstHalfPayments = paymentRecords.filter((payment) => {
+              const paymentDate = new Date(payment.paymentDate);
+              const receiptDate = new Date(payment.receiptDate);
+              return (
+                paymentDate >= startPreviousFirstHalf &&
+                paymentDate <= endPreviousFirstHalf &&
+                receiptDate >= startSecondHalf &&
+                receiptDate <= endSecondHalf
+              );
+            });
+            previousSecondHalfPayments = paymentRecords.filter((payment) => {
+              const paymentDate = new Date(payment.paymentDate);
+              const receiptDate = new Date(payment.receiptDate);
+              return (
+                paymentDate >= startPreviousSecondHalf &&
+                paymentDate <= endPreviousSecondHalf &&
+                receiptDate >= startFirstHalf &&
+                receiptDate <= endFirstHalf
+              );
+            });
+            firstHalfPayments = paymentRecords.filter((payment) => {
+              const paymentDate = new Date(payment.paymentDate);
+              const receiptDate = new Date(payment.receiptDate);
+              return (
+                (paymentDate >= startFirstHalf &&
+                  paymentDate <= endFirstHalf) ||
+                (receiptDate >= startFirstHalf && receiptDate <= endFirstHalf)
+              );
+            });
+            secondHalfPayments = paymentRecords.filter((payment) => {
+              const paymentDate = new Date(payment.paymentDate);
+              const receiptDate = new Date(payment.receiptDate);
+              return (
+                (paymentDate >= startSecondHalf &&
+                  paymentDate <= endSecondHalf) ||
+                (receiptDate >= startSecondHalf && receiptDate <= endSecondHalf)
+              );
+            });
+            accountSummary[`${year}-${monthNumber}`] = {
+              firstHalf: {
+                fortNight: "Primera",
+                sixDaysPlanTotalPayments: calculateXDayPlanTotalPayments(
+                  firstHalfPayments,
+                  "6",
+                  endFirstHalf
+                ),
+                sixDaysPlanTotalPending: calculateXDayPlanTotalPending(
+                  firstHalfPayments,
+                  "6",
+                  endFirstHalf
+                ),
+                threeDaysPlanTotalPayments: calculateXDayPlanTotalPayments(
+                  firstHalfPayments,
+                  "3",
+                  endFirstHalf
+                ),
+                threeDaysPlanTotalPending: calculateXDayPlanTotalPending(
+                  firstHalfPayments,
+                  "3",
+                  endFirstHalf
+                ),
+                fortNightIncome: calculateFortNightIncome(
+                  firstHalfPayments,
+                  startFirstHalf,
+                  endFirstHalf
+                ),
+                pendinIncome: calculatePendingIncome(
+                  firstHalfPayments,
+                  endFirstHalf
+                ),
+                incomeFromLastFortNight: calculateIncomeFromLastFortNight(
+                  previousSecondHalfPayments
+                ),
+                grossIncome:
+                  calculateFortNightIncome(
+                    firstHalfPayments,
+                    startFirstHalf,
+                    endFirstHalf
+                  ) +
+                  calculateIncomeFromLastFortNight(previousSecondHalfPayments),
+              },
+              secondHalf: {
+                fortNight: "Segunda",
+                sixDaysPlanTotalPayments: calculateXDayPlanTotalPayments(
+                  secondHalfPayments,
+                  "6",
+                  endSecondHalf
+                ),
+                sixDaysPlanTotalPending: calculateXDayPlanTotalPending(
+                  secondHalfPayments,
+                  "6",
+                  endSecondHalf
+                ),
+                threeDaysPlanTotalPayments: calculateXDayPlanTotalPayments(
+                  secondHalfPayments,
+                  "3",
+                  endSecondHalf
+                ),
+                threeDaysPlanTotalPending: calculateXDayPlanTotalPending(
+                  secondHalfPayments,
+                  "3",
+                  endSecondHalf
+                ),
+                fortNightIncome: calculateFortNightIncome(
+                  secondHalfPayments,
+                  startSecondHalf,
+                  endSecondHalf
+                ),
+                pendinIncome: calculatePendingIncome(
+                  secondHalfPayments,
+                  endSecondHalf
+                ),
+                incomeFromLastFortNight: calculateIncomeFromLastFortNight(
+                  previousFirstHalfPayments
+                ),
+                grossIncome:
+                  calculateFortNightIncome(
+                    secondHalfPayments,
+                    startSecondHalf,
+                    endSecondHalf
+                  ) +
+                  calculateIncomeFromLastFortNight(previousFirstHalfPayments),
+              },
+            };
+            clientSummary[trainerName] = accountSummary;
+            // return this.transformResponse(clientSummary);
+          }
+        }
+        return this.transformResponse(clientSummary);
       } catch (error) {
         strapi.log.error(error);
         return ctx.internalServerError(
