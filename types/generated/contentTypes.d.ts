@@ -909,7 +909,6 @@ export interface ApiPaymentRecordPaymentRecord extends Schema.CollectionType {
       'oneToOne',
       'api::trainer.trainer'
     >;
-    fortNight: Attribute.String;
     receiptDate: Attribute.Date;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
