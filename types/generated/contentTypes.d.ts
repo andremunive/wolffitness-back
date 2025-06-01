@@ -720,6 +720,7 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
     >;
     wfRole: Attribute.String;
     name: Attribute.String;
+    permissions: Attribute.JSON;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<

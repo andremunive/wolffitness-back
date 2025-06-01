@@ -70,6 +70,9 @@
     },
     "name": {
       "type": "string"
+    },
+    "permissions": {
+      "type": "json"
     }
   }
 }
