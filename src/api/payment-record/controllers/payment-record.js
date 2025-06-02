@@ -228,13 +228,13 @@ module.exports = createCoreController(
                   if (payment.hasDiscounted) {
                     if (payment.discountReason === "Promocion") {
                       const discount = payment.discountAmount / 2;
-                      return sum + (amount - 30000 - discount);
+                      return sum + (amount / 2 - discount);
                     } else {
                       const discount = payment.discountAmount;
-                      return sum + (amount - 30000 - discount);
+                      return sum + (amount / 2 - discount);
                     }
                   } else {
-                    return sum + amount - 30000;
+                    return sum + amount / 2;
                   }
                 }
               }, 0);
@@ -258,13 +258,13 @@ module.exports = createCoreController(
                   if (payment.hasDiscounted) {
                     if (payment.discountReason === "Promocion") {
                       const discount = payment.discountAmount / 2;
-                      return sum + (amount - 30000 - discount);
+                      return sum + (amount / 2 - discount);
                     } else {
                       const discount = payment.discountAmount;
-                      return sum + (amount - 30000 - discount);
+                      return sum + (amount / 2 - discount);
                     }
                   } else {
-                    return sum + amount - 30000;
+                    return sum + amount / 2;
                   }
                 }
               }, 0);
@@ -637,13 +637,13 @@ module.exports = createCoreController(
                 if (payment.hasDiscounted) {
                   if (payment.discountReason === "Promocion") {
                     const discount = payment.discountAmount / 2;
-                    return sum + (amount - 30000 - discount);
+                    return sum + (amount / 2 - discount);
                   } else {
                     const discount = payment.discountAmount;
-                    return sum + (amount - 30000 - discount);
+                    return sum + (amount / 2 - discount);
                   }
                 } else {
-                  return sum + amount - 30000;
+                  return sum + amount / 2;
                 }
               }
             },
@@ -669,13 +669,13 @@ module.exports = createCoreController(
                 if (payment.hasDiscounted) {
                   if (payment.discountReason === "Promocion") {
                     const discount = payment.discountAmount / 2;
-                    return sum + (amount - 30000 - discount);
+                    return sum + (amount / 2 - discount);
                   } else {
                     const discount = payment.discountAmount;
-                    return sum + (amount - 30000 - discount);
+                    return sum + (amount / 2 - discount);
                   }
                 } else {
-                  return sum + amount - 30000;
+                  return sum + amount / 2;
                 }
               }
             },
