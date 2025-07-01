@@ -212,88 +212,47 @@ module.exports = createCoreController(
                 if (receiptDate > limitDate) return sum;
                 if (paymentDate < startDate) return sum;
                 const amount = parseFloat(payment.amount);
-                if (payment.plan === "6 dias") {
-                  if (payment.hasDiscounted) {
-                    if (payment.discountReason === "Promocion") {
-                      const discount = payment.discountAmount / 2;
-                      return sum + (amount / 2 - discount);
-                    } else {
-                      const discount = payment.discountAmount;
-                      return sum + (amount / 2 - discount);
-                    }
-                  } else {
-                    return sum + amount / 2;
+                if (payment.hasDiscounted) {
+                  const discountReason = payment.discountReason;
+                  let discountAmount = payment.discountAmount;
+                  let discount = 0;
+                  if (discountReason.includes("UA")) {
+                    discountAmount = discountAmount - 10000;
                   }
+                  if (discountReason.includes("Promocion")) {
+                    discount = discountAmount / 2;
+                  } else if (discountReason.includes("Personal")) {
+                    discount = discountAmount;
+                  }
+                  return sum + (amount / 2 - discount);
                 } else {
-                  if (payment.hasDiscounted) {
-                    if (payment.discountReason === "Promocion") {
-                      const discount = payment.discountAmount / 2;
-                      return sum + (amount / 2 - discount);
-                    } else {
-                      const discount = payment.discountAmount;
-                      return sum + (amount / 2 - discount);
-                    }
-                  } else {
-                    return sum + amount / 2;
-                  }
+                  return sum + amount / 2;
                 }
               }, 0);
             const incomeFromPreviousFortNight =
               previousFortNightPayments.reduce((sum, payment) => {
                 if (payment.currentPaymentStatus === "pending") return sum;
                 const amount = parseFloat(payment.amount);
-                if (payment.plan === "6 dias") {
-                  if (payment.hasDiscounted) {
-                    if (payment.discountReason === "Promocion") {
-                      const discount = payment.discountAmount / 2;
-                      return sum + (amount / 2 - discount);
-                    } else {
-                      const discount = payment.discountAmount;
-                      return sum + (amount / 2 - discount);
-                    }
-                  } else {
-                    return sum + amount / 2;
+                if (payment.hasDiscounted) {
+                  const discountReason = payment.discountReason;
+                  let discountAmount = payment.discountAmount;
+                  let discount = 0;
+                  if (discountReason.includes("UA")) {
+                    discountAmount = discountAmount - 10000;
                   }
+                  if (discountReason.includes("Promocion")) {
+                    discount = discountAmount / 2;
+                  } else if (discountReason.includes("Personal")) {
+                    discount = discountAmount;
+                  }
+                  return sum + (amount / 2 - discount);
                 } else {
-                  if (payment.hasDiscounted) {
-                    if (payment.discountReason === "Promocion") {
-                      const discount = payment.discountAmount / 2;
-                      return sum + (amount / 2 - discount);
-                    } else {
-                      const discount = payment.discountAmount;
-                      return sum + (amount / 2 - discount);
-                    }
-                  } else {
-                    return sum + amount / 2;
-                  }
+                  return sum + amount / 2;
                 }
               }, 0);
             return currentFortNightTrainerIncome + incomeFromPreviousFortNight;
           };
           // Septima
-          const calculateBonus = (paymentsForBonus) => {
-            let bonus = 0;
-            let elegibleForBonus = 0;
-
-            paymentsForBonus.forEach((payment) => {
-              elegibleForBonus += 1;
-              if (elegibleForBonus > 7) {
-                const amount = parseFloat(payment.amount);
-                const discount = payment.hasDiscounted
-                  ? parseFloat(payment.discountAmount || 0)
-                  : 0;
-
-                if (!payment.hasDiscounted) {
-                  bonus += amount / 2 - 40000;
-                } else if (payment.discountReason === "Promocion") {
-                  bonus += (amount - discount) / 2 - 40000;
-                } else if (payment.discountReason === "Personal") {
-                  bonus += amount / 2 - 40000;
-                }
-              }
-            });
-            return bonus;
-          };
           for (let i = 0; i < months; i++) {
             let previousFirstHalfPayments = {};
             let previousSecondHalfPayments = {};
@@ -429,7 +388,6 @@ module.exports = createCoreController(
                   startFirstHalf,
                   endFirstHalf
                 ),
-                monthBonus: calculateBonus(clientsForBonus),
               },
               secondHalf: {
                 fortNight: "Segunda",
@@ -478,7 +436,6 @@ module.exports = createCoreController(
                   startSecondHalf,
                   endSecondHalf
                 ),
-                monthBonus: calculateBonus(clientsForBonus),
               },
             };
             clientSummary[trainerName] = accountSummary;
@@ -621,30 +578,21 @@ module.exports = createCoreController(
               if (receiptDate > limitDate) return sum;
               if (paymentDate < startDate) return sum;
               const amount = parseFloat(payment.amount);
-              if (payment.plan === "6 dias") {
-                if (payment.hasDiscounted) {
-                  if (payment.discountReason === "Promocion") {
-                    const discount = payment.discountAmount / 2;
-                    return sum + (amount / 2 - discount);
-                  } else {
-                    const discount = payment.discountAmount;
-                    return sum + (amount / 2 - discount);
-                  }
-                } else {
-                  return sum + amount / 2;
+              if (payment.hasDiscounted) {
+                const discountReason = payment.discountReason;
+                let discountAmount = payment.discountAmount;
+                let discount = 0;
+                if (discountReason.includes("UA")) {
+                  discountAmount = discountAmount - 10000;
                 }
+                if (discountReason.includes("Promocion")) {
+                  discount = discountAmount / 2;
+                } else if (discountReason.includes("Personal")) {
+                  discount = discountAmount;
+                }
+                return sum + (amount / 2 - discount);
               } else {
-                if (payment.hasDiscounted) {
-                  if (payment.discountReason === "Promocion") {
-                    const discount = payment.discountAmount / 2;
-                    return sum + (amount / 2 - discount);
-                  } else {
-                    const discount = payment.discountAmount;
-                    return sum + (amount / 2 - discount);
-                  }
-                } else {
-                  return sum + amount / 2;
-                }
+                return sum + amount / 2;
               }
             },
             0
@@ -653,59 +601,26 @@ module.exports = createCoreController(
             (sum, payment) => {
               if (payment.currentPaymentStatus === "pending") return sum;
               const amount = parseFloat(payment.amount);
-              if (payment.plan === "6 dias") {
-                if (payment.hasDiscounted) {
-                  if (payment.discountReason === "Promocion") {
-                    const discount = payment.discountAmount / 2;
-                    return sum + (amount / 2 - discount);
-                  } else {
-                    const discount = payment.discountAmount;
-                    return sum + (amount / 2 - discount);
-                  }
-                } else {
-                  return sum + amount / 2;
+              if (payment.hasDiscounted) {
+                const discountReason = payment.discountReason;
+                let discountAmount = payment.discountAmount;
+                let discount = 0;
+                if (discountReason.includes("UA")) {
+                  discountAmount = discountAmount - 10000;
                 }
+                if (discountReason.includes("Promocion")) {
+                  discount = discountAmount / 2;
+                } else if (discountReason.includes("Personal")) {
+                  discount = discountAmount;
+                }
+                return sum + (amount / 2 - discount);
               } else {
-                if (payment.hasDiscounted) {
-                  if (payment.discountReason === "Promocion") {
-                    const discount = payment.discountAmount / 2;
-                    return sum + (amount / 2 - discount);
-                  } else {
-                    const discount = payment.discountAmount;
-                    return sum + (amount / 2 - discount);
-                  }
-                } else {
-                  return sum + amount / 2;
-                }
+                return sum + amount / 2;
               }
             },
             0
           );
           return currentFortNightTrainerIncome + incomeFromPreviousFortNight;
-        };
-        // Septima
-        const calculateBonus = (paymentsForBonus) => {
-          let bonus = 0;
-          let elegibleForBonus = 0;
-
-          paymentsForBonus.forEach((payment) => {
-            elegibleForBonus += 1;
-            if (elegibleForBonus > 7) {
-              const amount = parseFloat(payment.amount);
-              const discount = payment.hasDiscounted
-                ? parseFloat(payment.discountAmount || 0)
-                : 0;
-
-              if (!payment.hasDiscounted) {
-                bonus += amount / 2 - 40000;
-              } else if (payment.discountReason === "Promocion") {
-                bonus += (amount - discount) / 2 - 40000;
-              } else if (payment.discountReason === "Personal") {
-                bonus += amount / 2 - 40000;
-              }
-            }
-          });
-          return bonus;
         };
         for (let i = 0; i < months; i++) {
           let previousFirstHalfPayments = {};
@@ -841,7 +756,6 @@ module.exports = createCoreController(
                 startFirstHalf,
                 endFirstHalf
               ),
-              monthBonus: calculateBonus(clientsForBonus),
             },
             secondHalf: {
               fortNight: "Segunda",
@@ -889,7 +803,6 @@ module.exports = createCoreController(
                 startSecondHalf,
                 endSecondHalf
               ),
-              monthBonus: calculateBonus(clientsForBonus),
             },
           };
         }
